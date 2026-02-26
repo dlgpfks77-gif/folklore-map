@@ -1,0 +1,433 @@
+index.html
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>설화문화지도(이미지 기반) - 어려운 소송에 명판결하기</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <style>
+    :root{
+      --line:#e5e7eb; --ink:#111827; --muted:#6b7280; --card:#ffffff; --bg:#f8fafc;
+    }
+    body{ margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; color:var(--ink); background:var(--bg);}
+    .topbar{
+      height:60px; display:flex; align-items:center; justify-content:space-between;
+      padding:0 18px; border-bottom:1px solid var(--line);
+      background:linear-gradient(#f6f8ff,#f9fbff);
+    }
+    .brand{ display:flex; align-items:center; gap:10px; font-weight:900; letter-spacing:-0.3px;}
+    .brand .logo{
+      width:26px; height:26px; border-radius:10px;
+      background:conic-gradient(from 180deg, #60a5fa, #34d399, #f59e0b, #60a5fa);
+      box-shadow:0 6px 14px rgba(0,0,0,.08);
+    }
+    .tabs{ display:flex; gap:18px; color:var(--muted); font-weight:650; }
+    .tabs span{ padding:10px 10px; border-radius:12px; }
+    .tabs .active{ color:var(--ink); border-bottom:3px solid #2563eb; border-radius:0; padding-bottom:7px; }
+
+    .layout{
+      height:calc(100vh - 60px);
+      display:grid;
+      grid-template-columns: 1fr 380px;
+      grid-template-rows: 1fr 240px;
+    }
+    #map{ grid-column:1; grid-row:1 / span 2; background:#fff; }
+    .side{
+      grid-column:2; grid-row:1;
+      border-left:1px solid var(--line);
+      background:rgba(255,255,255,.80);
+      backdrop-filter: blur(8px);
+      padding:14px;
+      overflow:auto;
+    }
+    .bottom{
+      grid-column:2; grid-row:2;
+      border-left:1px solid var(--line);
+      border-top:1px solid var(--line);
+      background:rgba(255,255,255,.82);
+      backdrop-filter: blur(8px);
+      padding:10px 12px;
+      overflow:auto;
+    }
+    .panelTitle{ font-weight:900; margin:2px 0 10px; display:flex; justify-content:space-between; align-items:center;}
+    .panelTitle .x{ color:var(--muted); font-weight:900; cursor:default;}
+    .section{ border-top:1px solid var(--line); padding-top:12px; margin-top:12px; }
+    .section:first-of-type{ border-top:none; padding-top:0; margin-top:0;}
+    .section h3{ margin:0 0 8px; font-size:14px; letter-spacing:-0.2px; }
+    .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .chk{ display:flex; align-items:center; gap:8px; padding:8px 10px; border:1px solid var(--line); border-radius:12px; background:var(--card); user-select:none;}
+    .chk input{ accent-color:#2563eb; }
+    input[type="text"], input[type="number"]{
+      width:100%; padding:10px 10px; border:1px solid var(--line); border-radius:12px;
+      box-sizing:border-box; background:var(--card);
+    }
+    .grid2{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+    .btn{
+      width:100%; padding:11px 12px; border:0; border-radius:12px;
+      background:#2563eb; color:white; font-weight:900; cursor:pointer;
+      box-shadow:0 10px 22px rgba(37,99,235,.18);
+    }
+    .hint{ margin-top:8px; color:var(--muted); font-size:12px; line-height:1.45;}
+
+    .countRow{ display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+    .countRow .t{ font-weight:900; }
+    .countRow .c{ color:var(--muted); font-size:12px; }
+
+    .list{ display:flex; flex-direction:column; gap:8px; }
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px;
+      cursor:pointer;
+    }
+    .card .title{ font-weight:850; }
+    .card .meta{ color:var(--muted); font-size:12px; margin-top:2px; }
+
+    /* === A~H 도형(그림과 동일한 “검정/흰” + (어린 원님) 점선테두리) === */
+    .mark-icon{ background:transparent; border:none; }
+    .badge{
+      width:28px; height:28px; border-radius:999px;
+      display:flex; align-items:center; justify-content:center;
+      font-weight:950; font-size:13px; line-height:1;
+      box-shadow:0 8px 18px rgba(0,0,0,.16);
+      border:2px solid #0f172a;
+    }
+    .core{ background:#0f172a; color:#fff; }      /* 검정 바탕 */
+    .variant{ background:#fff; color:#0f172a; }   /* 흰 바탕 */
+    .child{ border-style:dashed; border-width:2px; } /* (어린 원님) */
+
+    /* === Legend === */
+    .legend{
+      position:absolute; left:18px; bottom:18px;
+      background:rgba(255,255,255,.88);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px 12px;
+      box-shadow:0 10px 24px rgba(0,0,0,.14);
+      z-index:700;
+      max-width:360px;
+    }
+    .legend .h{ font-weight:950; margin-bottom:6px; }
+    .legend .item{ display:flex; align-items:center; gap:8px; font-size:12px; margin-top:4px; }
+    .legend .lg{
+      width:18px; height:18px; border-radius:999px;
+      border:2px solid #0f172a; display:flex; align-items:center; justify-content:center;
+      font-weight:950; font-size:11px; background:#fff;
+    }
+    .legend .lg.core{ background:#0f172a; color:#fff; }
+    .legend .lg.variant{ background:#fff; color:#0f172a; }
+
+    /* === Modal === */
+    .modal{
+      position:absolute; left:18px; top:78px;
+      width:420px; max-height:62vh;
+      background:rgba(255,255,255,.92);
+      border:1px solid var(--line);
+      border-radius:16px;
+      box-shadow:0 14px 34px rgba(0,0,0,.18);
+      padding:12px;
+      display:none;
+      overflow:auto;
+      z-index:800;
+      backdrop-filter: blur(8px);
+    }
+    .modal .head{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
+    .modal .head .t{ font-weight:950; font-size:16px; line-height:1.25; }
+    .modal .head .x{ color:var(--muted); font-weight:950; cursor:pointer; }
+    .modal .meta{ color:var(--muted); font-size:12px; margin-top:4px; }
+    .tag{
+      display:inline-flex; align-items:center;
+      font-size:12px; margin-top:8px; margin-right:6px;
+      background:#eef2ff; color:#1e40af;
+      padding:4px 10px; border-radius:999px; border:1px solid #dbeafe;
+      font-weight:800;
+    }
+    .hl{ background:#fff3a3; padding:0 2px; border-radius:4px; }
+  </style>
+</head>
+
+<body>
+  <div class="topbar">
+    <div class="brand"><span class="logo"></span><span style="font-size:22px;">설화문화지도</span></div>
+    <div class="tabs">
+      <span class="active">홈</span><span>설화 분류</span><span>지도 비교</span><span>데이터분석</span>
+    </div>
+    <div style="color:var(--muted); font-weight:750;">
+      기반: <b style="color:var(--ink);">지도 이미지(좌표 없음)</b> · 점 클릭 → <b style="color:var(--ink);">원문 전체</b>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div id="map"></div>
+
+    <!-- 범례(그림 텍스트 기반) -->
+    <div class="legend">
+      <div class="h">〈어려운 소송에 명판결하기〉 유형/변이 표기</div>
+
+      <div class="item"><span class="lg core">A</span> 재산다툼형 (핵심형)</div>
+      <div class="item"><span class="lg core">B</span> 봉제사 요구형 (핵심형)</div>
+      <div class="item"><span class="lg core">C</span> 절행강요형 (핵심형)</div>
+
+      <div class="item"><span class="lg variant">A</span> 응기값 변상하기 (변이형)</div>
+      <div class="item"><span class="lg variant">B</span> 매값 변상하기 (변이형)</div>
+      <div class="item"><span class="lg variant">C</span> 잃어버린 보따리 변상하기 (변이형)</div>
+      <div class="item"><span class="lg variant">D</span> 시주값 전달 돌려받기 (변이형)</div>
+      <div class="item"><span class="lg variant">E</span> 소값 변상하기 / 허명비판형 (변이형)</div>
+      <div class="item"><span class="lg variant">F</span> 죽제비 임자 가리기 (변이형)</div>
+      <div class="item"><span class="lg variant">G</span> 운값 변상하기 (변이형)</div>
+      <div class="item"><span class="lg variant">H</span> 굴값 변상하기 (변이형)</div>
+
+      <div class="hint">* (어린 원님) 표기는 점선 테두리로 표시</div>
+    </div>
+
+    <div class="side">
+      <div class="panelTitle"><div>설화 검색 필터</div><div class="x">✕</div></div>
+
+      <div class="section">
+        <h3>표기(핵심/변이)</h3>
+        <div class="row">
+          <label class="chk"><input type="checkbox" class="tier" value="core" checked> 핵심형(검정)</label>
+          <label class="chk"><input type="checkbox" class="tier" value="variant" checked> 변이형(흰색)</label>
+          <label class="chk"><input type="checkbox" id="onlyChild"> (어린 원님)만</label>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>유형 코드</h3>
+        <div class="row">
+          <!-- 필요시 체크박스 추가/삭제 가능 -->
+          <label class="chk"><input type="checkbox" class="code" value="A" checked> A</label>
+          <label class="chk"><input type="checkbox" class="code" value="B" checked> B</label>
+          <label class="chk"><input type="checkbox" class="code" value="C" checked> C</label>
+          <label class="chk"><input type="checkbox" class="code" value="D" checked> D</label>
+          <label class="chk"><input type="checkbox" class="code" value="E" checked> E</label>
+          <label class="chk"><input type="checkbox" class="code" value="F" checked> F</label>
+          <label class="chk"><input type="checkbox" class="code" value="G" checked> G</label>
+          <label class="chk"><input type="checkbox" class="code" value="H" checked> H</label>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>시기(채록 연도)</h3>
+        <div class="grid2">
+          <input id="yearMin" type="number" placeholder="예: 1900">
+          <input id="yearMax" type="number" placeholder="예: 2000">
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>모티프</h3>
+        <input id="motif" type="text" placeholder="예: 재판; 판결; 지혜 (세미콜론 ; 로 구분)">
+      </div>
+
+      <div class="section">
+        <h3>말뭉치(원문) 검색</h3>
+        <input id="q" type="text" placeholder="예: 군수, 원님, 재판…">
+      </div>
+
+      <div class="section">
+        <button class="btn" id="apply">적용</button>
+        <div class="hint">
+          * 지금은 “지도 이미지 기반”이라 점 위치는 (x,y) 픽셀로 지정됩니다.<br/>
+          * 나중에 WGS84 좌표가 생기면 GIS로 즉시 전환 가능합니다.
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom">
+      <div class="countRow">
+        <div class="t">검색 결과</div>
+        <div class="c" id="count">0건</div>
+      </div>
+      <div class="list" id="list"></div>
+    </div>
+
+    <div class="modal" id="modal">
+      <div class="head">
+        <div>
+          <div class="t" id="mTitle"></div>
+          <div class="meta" id="mMeta"></div>
+          <div id="mTags"></div>
+        </div>
+        <div class="x" id="mClose">✕</div>
+      </div>
+      <hr style="border:none;border-top:1px solid var(--line); margin:10px 0;">
+      <div id="mText" style="white-space:pre-wrap; line-height:1.55;"></div>
+    </div>
+  </div>
+
+<script>
+  // =========================
+  // (1) 지도 이미지 설정
+  //  - map.png 파일을 저장소 루트에 올려두면 그대로 작동
+  //  - 이미지 크기(픽셀)를 아래에 정확히 입력하면 더 깔끔합니다.
+  // =========================
+  const IMAGE_URL = "./image.png";
+
+  // ✅ 여기를 “당신 이미지 실제 크기(픽셀)”로 바꾸면 정확도↑
+  //    (모르겠으면 일단 그대로 두고, 나중에 조정해도 됩니다.)
+  const IMG_W = 900;
+  const IMG_H = 1200;
+
+  // CRS.Simple: 이미지 좌표계 (좌표 없음)
+  const map = L.map("map", { crs: L.CRS.Simple, minZoom: -2, maxZoom: 2, zoomControl: true });
+
+  // 이미지 bounds: (y,x) 순서에 주의
+  const bounds = [[0,0],[IMG_H, IMG_W]];
+  L.imageOverlay(IMAGE_URL, bounds).addTo(map);
+  map.fitBounds(bounds);
+
+  // =========================
+  // (2) 실제 데이터 자리 (지금은 예시)
+  //  - x,y는 이미지 상의 픽셀 좌표입니다.
+  //  - 나중에 실제 자료 입력 시 여기만 늘리면 됩니다.
+  // =========================
+  const DATA = [
+    // 핵심형(검정): A/B/C
+    { id:"CORE-A-01", title:"재산다툼형(예시)", code:"A", name:"재산다툼형", tier:"core", child:false, year:1965, region:"상주", motifs:["재판","판결"], fulltext:"(원문 전체) …", x:540, y:520 },
+    { id:"CORE-B-01", title:"봉제사 요구형(예시)", code:"B", name:"봉제사 요구형", tier:"core", child:false, year:1960, region:"수원", motifs:["분쟁"], fulltext:"(원문 전체) …", x:360, y:360 },
+    { id:"CORE-C-01", title:"절행강요형(예시)", code:"C", name:"절행강요형", tier:"core", child:false, year:1958, region:"안동", motifs:["강요","판정"], fulltext:"(원문 전체) …", x:590, y:460 },
+
+    // 변이형(흰): A~H (어린 원님은 child:true)
+    { id:"VAR-A-01", title:"응기값 변상하기", code:"A", name:"응기값 변상하기", tier:"variant", child:true, year:1978, region:"영주", motifs:["변상","지혜"], fulltext:"(원문 전체) … (어린 원님)", x:570, y:430 },
+    { id:"VAR-B-01", title:"매값 변상하기", code:"B", name:"매값 변상하기", tier:"variant", child:true, year:1972, region:"춘천", motifs:["변상"], fulltext:"(원문 전체) … (어린 원님)", x:510, y:210 },
+    { id:"VAR-C-01", title:"잃어버린 보따리 변상하기", code:"C", name:"잃어버린 보따리 변상하기", tier:"variant", child:true, year:1968, region:"경주", motifs:["보따리","변상"], fulltext:"(원문 전체) … (어린 원님)", x:660, y:680 },
+    { id:"VAR-D-01", title:"시주값 전달 돌려받기", code:"D", name:"시주값 전달 돌려받기", tier:"variant", child:false, year:1964, region:"충주", motifs:["시주","전달"], fulltext:"(원문 전체) …", x:520, y:340 },
+    { id:"VAR-E-01", title:"소값 변상하기", code:"E", name:"소값 변상하기", tier:"variant", child:true, year:1966, region:"전주", motifs:["소","변상"], fulltext:"(원문 전체) … (어린 원님)", x:420, y:820 },
+    { id:"VAR-F-01", title:"죽제비 임자 가리기", code:"F", name:"죽제비 임자 가리기", tier:"variant", child:true, year:1967, region:"밀양", motifs:["임자","가리기"], fulltext:"(원문 전체) … (어린 원님)", x:640, y:760 },
+    { id:"VAR-G-01", title:"운값 변상하기", code:"G", name:"운값 변상하기", tier:"variant", child:false, year:1963, region:"부평", motifs:["운값","변상"], fulltext:"(원문 전체) …", x:330, y:520 },
+    { id:"VAR-H-01", title:"굴값 변상하기", code:"H", name:"굴값 변상하기", tier:"variant", child:false, year:1969, region:"포항", motifs:["굴","변상"], fulltext:"(원문 전체) …", x:720, y:640 },
+    { id:"VAR-E-02", title:"허명비판형", code:"E", name:"허명비판형", tier:"variant", child:false, year:1970, region:"제주", motifs:["비판"], fulltext:"(원문 전체) …", x:190, y:1050 },
+  ];
+
+  // =========================
+  // (3) 마커 아이콘 생성(검정/흰 + 점선)
+  // =========================
+  function makeIcon(code, tier, child){
+    const cls = ["badge", tier, child ? "child" : ""].join(" ");
+    return L.divIcon({
+      className: "mark-icon",
+      html: `<div class="${cls}">${code}</div>`,
+      iconSize: [28,28],
+      iconAnchor: [14,14]
+    });
+  }
+
+  // =========================
+  // (4) 모달
+  // =========================
+  const modal = document.getElementById("modal");
+  const mTitle = document.getElementById("mTitle");
+  const mMeta  = document.getElementById("mMeta");
+  const mTags  = document.getElementById("mTags");
+  const mText  = document.getElementById("mText");
+  document.getElementById("mClose").onclick = ()=> modal.style.display="none";
+
+  function escapeHTML(s){
+    return (s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+  }
+  function highlight(text, q){
+    const t = escapeHTML(text||"");
+    if (!q) return t;
+    const esc = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return t.replace(new RegExp(esc, "g"), m => `<span class="hl">${m}</span>`);
+  }
+  function openDetail(d, q){
+    mTitle.textContent = `${d.title}  (${d.tier==="core" ? "핵심" : "변이"}·${d.code}${d.child ? "·어린 원님" : ""})`;
+    mMeta.textContent  = `${d.name} · ${d.region || ""} · ${d.year ?? "연도 미상"}`.trim();
+    mTags.innerHTML = "";
+    (d.motifs||[]).forEach(x=>{
+      const span = document.createElement("span");
+      span.className = "tag";
+      span.textContent = x;
+      mTags.appendChild(span);
+    });
+    mText.innerHTML = highlight(d.fulltext || "", q);
+    modal.style.display = "block";
+  }
+
+  // =========================
+  // (5) 필터/검색
+  // =========================
+  function getChecked(selector){
+    return new Set([...document.querySelectorAll(selector)].filter(x=>x.checked).map(x=>x.value));
+  }
+  function parseMotifs(raw){
+    return (raw||"").split(";").map(x=>x.trim()).filter(Boolean);
+  }
+
+  let MARKERS = [];
+  function clearMarkers(){
+    MARKERS.forEach(m=>map.removeLayer(m));
+    MARKERS = [];
+  }
+
+  function apply(){
+    const tiers = getChecked(".tier");
+    const codes = getChecked(".code");
+    const onlyChild = document.getElementById("onlyChild").checked;
+
+    const yearMinRaw = document.getElementById("yearMin").value.trim();
+    const yearMaxRaw = document.getElementById("yearMax").value.trim();
+    const yearMin = yearMinRaw ? parseInt(yearMinRaw,10) : null;
+    const yearMax = yearMaxRaw ? parseInt(yearMaxRaw,10) : null;
+
+    const motifs = parseMotifs(document.getElementById("motif").value);
+    const q = document.getElementById("q").value.trim();
+
+    const filtered = DATA.filter(d=>{
+      if (!tiers.has(d.tier)) return false;
+      if (!codes.has(d.code)) return false;
+      if (onlyChild && !d.child) return false;
+      if (yearMin !== null && (d.year ?? 0) < yearMin) return false;
+      if (yearMax !== null && (d.year ?? 9999) > yearMax) return false;
+
+      if (motifs.length){
+        const have = new Set((d.motifs||[]).map(x=>x.trim()));
+        const ok = motifs.some(m=>have.has(m));
+        if (!ok) return false;
+      }
+
+      if (q){
+        const inText = (d.fulltext||"").includes(q) || (d.title||"").includes(q) || (d.region||"").includes(q) || (d.name||"").includes(q);
+        if (!inText) return false;
+      }
+      return true;
+    });
+
+    // markers
+    clearMarkers();
+    filtered.forEach(d=>{
+      // CRS.Simple에서 좌표는 (y,x)
+      const marker = L.marker([d.y, d.x], { icon: makeIcon(d.code, d.tier, d.child) })
+        .addTo(map)
+        .on("click", ()=> openDetail(d, q));
+      MARKERS.push(marker);
+    });
+
+    // list
+    document.getElementById("count").textContent = `${filtered.length}건 / ${DATA.length}건`;
+    const list = document.getElementById("list");
+    list.innerHTML = "";
+    filtered.forEach(d=>{
+      const el = document.createElement("div");
+      el.className = "card";
+      el.onclick = ()=> { map.setView([d.y, d.x], Math.min(map.getZoom()+1, 1)); openDetail(d, q); };
+      el.innerHTML = `
+        <div class="title">(${d.code}) ${escapeHTML(d.title)} ${d.child ? "·(어린 원님)" : ""}</div>
+        <div class="meta">${escapeHTML(d.tier==="core" ? "핵심형(검정)" : "변이형(흰)")} · ${d.year ?? "연도 미상"} · ${escapeHTML(d.region||"")}</div>
+      `;
+      list.appendChild(el);
+    });
+  }
+
+  document.getElementById("apply").onclick = apply;
+  apply();
+</script>
+</body>
+</html>
