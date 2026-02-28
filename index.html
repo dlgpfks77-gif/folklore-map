@@ -1,4 +1,3 @@
-index.html
 <!doctype html>
 <html lang="ko">
 <head>
@@ -14,6 +13,7 @@ index.html
       --line:#e5e7eb; --ink:#111827; --muted:#6b7280; --card:#ffffff; --bg:#f8fafc;
     }
     body{ margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; color:var(--ink); background:var(--bg);}
+
     .topbar{
       height:60px; display:flex; align-items:center; justify-content:space-between;
       padding:0 18px; border-bottom:1px solid var(--line);
@@ -88,18 +88,18 @@ index.html
     .card .title{ font-weight:850; }
     .card .meta{ color:var(--muted); font-size:12px; margin-top:2px; }
 
-    /* === A~H 도형(그림과 동일한 “검정/흰” + (어린 원님) 점선테두리) === */
+    /* === 작은 아이콘(20px) === */
     .mark-icon{ background:transparent; border:none; }
     .badge{
-      width:28px; height:28px; border-radius:999px;
+      width:20px; height:20px; border-radius:999px;
       display:flex; align-items:center; justify-content:center;
-      font-weight:950; font-size:13px; line-height:1;
-      box-shadow:0 8px 18px rgba(0,0,0,.16);
+      font-weight:950; font-size:10px; line-height:1;
+      box-shadow:0 6px 14px rgba(0,0,0,.16);
       border:2px solid #0f172a;
     }
-    .core{ background:#0f172a; color:#fff; }      /* 검정 바탕 */
-    .variant{ background:#fff; color:#0f172a; }   /* 흰 바탕 */
-    .child{ border-style:dashed; border-width:2px; } /* (어린 원님) */
+    .core{ background:#0f172a; color:#fff; }      /* 검정 */
+    .variant{ background:#fff; color:#0f172a; }   /* 흰 */
+    .child{ border-style:dashed; border-width:2px; } /* (어린 원님) 점선 */
 
     /* === Legend === */
     .legend{
@@ -115,9 +115,9 @@ index.html
     .legend .h{ font-weight:950; margin-bottom:6px; }
     .legend .item{ display:flex; align-items:center; gap:8px; font-size:12px; margin-top:4px; }
     .legend .lg{
-      width:18px; height:18px; border-radius:999px;
+      width:16px; height:16px; border-radius:999px;
       border:2px solid #0f172a; display:flex; align-items:center; justify-content:center;
-      font-weight:950; font-size:11px; background:#fff;
+      font-weight:950; font-size:10px; background:#fff;
     }
     .legend .lg.core{ background:#0f172a; color:#fff; }
     .legend .lg.variant{ background:#fff; color:#0f172a; }
@@ -166,32 +166,18 @@ index.html
     </div>
 
     <div style="color:var(--muted); font-weight:750;">
-      기반: <b style="color:var(--ink);">지도 이미지(좌표 없음)</b> · 점 클릭 →
-      <b style="color:var(--ink);">원문 전체</b>
+      기반: <b style="color:var(--ink);">실제 지도(OSM)</b> · 점 클릭 → <b style="color:var(--ink);">원문 전체</b>
     </div>
   </div>
 
   <div class="layout">
     <div id="map"></div>
 
-    <!-- 범례(그림 텍스트 기반) -->
     <div class="legend">
       <div class="h">〈어려운 소송에 명판결하기〉 유형/변이 표기</div>
-
-      <div class="item"><span class="lg core">A</span> 재산다툼형 (핵심형)</div>
-      <div class="item"><span class="lg core">B</span> 봉제사 요구형 (핵심형)</div>
-      <div class="item"><span class="lg core">C</span> 절행강요형 (핵심형)</div>
-
-      <div class="item"><span class="lg variant">A</span> 응기값 변상하기 (변이형)</div>
-      <div class="item"><span class="lg variant">B</span> 매값 변상하기 (변이형)</div>
-      <div class="item"><span class="lg variant">C</span> 잃어버린 보따리 변상하기 (변이형)</div>
-      <div class="item"><span class="lg variant">D</span> 시주값 전달 돌려받기 (변이형)</div>
-      <div class="item"><span class="lg variant">E</span> 소값 변상하기 / 허명비판형 (변이형)</div>
-      <div class="item"><span class="lg variant">F</span> 죽제비 임자 가리기 (변이형)</div>
-      <div class="item"><span class="lg variant">G</span> 운값 변상하기 (변이형)</div>
-      <div class="item"><span class="lg variant">H</span> 굴값 변상하기 (변이형)</div>
-
-      <div class="hint">* (어린 원님) 표기는 점선 테두리로 표시</div>
+      <div class="item"><span class="lg core">A</span> 핵심형(검정)</div>
+      <div class="item"><span class="lg variant">A</span> 변이형(흰)</div>
+      <div class="hint">* (어린 원님) 표기는 점선 테두리</div>
     </div>
 
     <div class="side">
@@ -209,7 +195,6 @@ index.html
       <div class="section">
         <h3>유형 코드</h3>
         <div class="row">
-          <!-- 필요시 체크박스 추가/삭제 가능 -->
           <label class="chk"><input type="checkbox" class="code" value="A" checked> A</label>
           <label class="chk"><input type="checkbox" class="code" value="B" checked> B</label>
           <label class="chk"><input type="checkbox" class="code" value="C" checked> C</label>
@@ -242,8 +227,9 @@ index.html
       <div class="section">
         <button class="btn" id="apply">적용</button>
         <div class="hint">
-          * 지금은 “지도 이미지 기반”이라 점 위치는 (x,y) 픽셀로 지정됩니다.<br/>
-          * 나중에 WGS84 좌표가 생기면 GIS로 즉시 전환 가능합니다.
+          * 지역명(시/군/읍면)을 Nominatim(OSM)으로 좌표 변환합니다.<br/>
+          * 같은 지역명이 여러 개면 자동으로 살짝 퍼져(겹침 방지) 보입니다.<br/>
+          * 처음 로딩은 1~5초 걸릴 수 있습니다(인터넷 필요).
         </div>
       </div>
     </div>
@@ -272,63 +258,106 @@ index.html
 
 <script>
   // =========================
-  // (1) 지도 이미지 설정
-  //  - map.png 파일을 저장소 루트에 올려두면 그대로 작동
-  //  - 이미지 크기(픽셀)를 아래에 정확히 입력하면 더 깔끔합니다.
+  // 0) 지도(실제 OSM) 기본
   // =========================
-  const IMAGE_URL = "./image.png";
+  const map = L.map('map', { zoomControl:true }).setView([36.5, 127.8], 7);
 
-  // ✅ 여기를 “당신 이미지 실제 크기(픽셀)”로 바꾸면 정확도↑
-  //    (모르겠으면 일단 그대로 두고, 나중에 조정해도 됩니다.)
-  const IMG_W = 900;
-  const IMG_H = 1200;
-
-  // CRS.Simple: 이미지 좌표계 (좌표 없음)
-  const map = L.map("map", { crs: L.CRS.Simple, minZoom: -2, maxZoom: 2, zoomControl: true });
-
-  // 이미지 bounds: (y,x) 순서에 주의
-  const bounds = [[0,0],[IMG_H, IMG_W]];
-  L.imageOverlay(IMAGE_URL, bounds).addTo(map);
-  map.fitBounds(bounds);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
 
   // =========================
-  // (2) 실제 데이터 자리 (지금은 예시)
-  //  - x,y는 이미지 상의 픽셀 좌표입니다.
-  //  - 나중에 실제 자료 입력 시 여기만 늘리면 됩니다.
+  // (1) 데이터: 지역명만 가지고 출발
+  //  - regionName: 시/군/읍면
+  //  - code/tier/child는 기존 표기 유지
   // =========================
   const DATA = [
-    // 핵심형(검정): A/B/C
-    { id:"CORE-A-01", title:"재산다툼형(예시)", code:"A", name:"재산다툼형", tier:"core", child:false, year:1965, region:"상주", motifs:["재판","판결"], fulltext:"(원문 전체) …", x:540, y:520 },
-    { id:"CORE-B-01", title:"봉제사 요구형(예시)", code:"B", name:"봉제사 요구형", tier:"core", child:false, year:1960, region:"수원", motifs:["분쟁"], fulltext:"(원문 전체) …", x:360, y:360 },
-    { id:"CORE-C-01", title:"절행강요형(예시)", code:"C", name:"절행강요형", tier:"core", child:false, year:1958, region:"안동", motifs:["강요","판정"], fulltext:"(원문 전체) …", x:590, y:460 },
+    { id:"CORE-A-01", title:"재산다툼형(예시)", code:"A", name:"재산다툼형", tier:"core", child:false, year:1965, regionName:"상주", motifs:["재판","판결"], fulltext:"(원문 전체) …" },
+    { id:"CORE-B-01", title:"봉제사 요구형(예시)", code:"B", name:"봉제사 요구형", tier:"core", child:false, year:1960, regionName:"수원", motifs:["분쟁"], fulltext:"(원문 전체) …" },
+    { id:"CORE-C-01", title:"절행강요형(예시)", code:"C", name:"절행강요형", tier:"core", child:false, year:1958, regionName:"안동", motifs:["강요","판정"], fulltext:"(원문 전체) …" },
 
-    // 변이형(흰): A~H (어린 원님은 child:true)
-    { id:"VAR-A-01", title:"응기값 변상하기", code:"A", name:"응기값 변상하기", tier:"variant", child:true, year:1978, region:"영주", motifs:["변상","지혜"], fulltext:"(원문 전체) … (어린 원님)", x:570, y:430 },
-    { id:"VAR-B-01", title:"매값 변상하기", code:"B", name:"매값 변상하기", tier:"variant", child:true, year:1972, region:"춘천", motifs:["변상"], fulltext:"(원문 전체) … (어린 원님)", x:510, y:210 },
-    { id:"VAR-C-01", title:"잃어버린 보따리 변상하기", code:"C", name:"잃어버린 보따리 변상하기", tier:"variant", child:true, year:1968, region:"경주", motifs:["보따리","변상"], fulltext:"(원문 전체) … (어린 원님)", x:660, y:680 },
-    { id:"VAR-D-01", title:"시주값 전달 돌려받기", code:"D", name:"시주값 전달 돌려받기", tier:"variant", child:false, year:1964, region:"충주", motifs:["시주","전달"], fulltext:"(원문 전체) …", x:520, y:340 },
-    { id:"VAR-E-01", title:"소값 변상하기", code:"E", name:"소값 변상하기", tier:"variant", child:true, year:1966, region:"전주", motifs:["소","변상"], fulltext:"(원문 전체) … (어린 원님)", x:420, y:820 },
-    { id:"VAR-F-01", title:"죽제비 임자 가리기", code:"F", name:"죽제비 임자 가리기", tier:"variant", child:true, year:1967, region:"밀양", motifs:["임자","가리기"], fulltext:"(원문 전체) … (어린 원님)", x:640, y:760 },
-    { id:"VAR-G-01", title:"운값 변상하기", code:"G", name:"운값 변상하기", tier:"variant", child:false, year:1963, region:"부평", motifs:["운값","변상"], fulltext:"(원문 전체) …", x:330, y:520 },
-    { id:"VAR-H-01", title:"굴값 변상하기", code:"H", name:"굴값 변상하기", tier:"variant", child:false, year:1969, region:"포항", motifs:["굴","변상"], fulltext:"(원문 전체) …", x:720, y:640 },
-    { id:"VAR-E-02", title:"허명비판형", code:"E", name:"허명비판형", tier:"variant", child:false, year:1970, region:"제주", motifs:["비판"], fulltext:"(원문 전체) …", x:190, y:1050 },
+    { id:"VAR-A-01", title:"응기값 변상하기", code:"A", name:"응기값 변상하기", tier:"variant", child:true, year:1978, regionName:"영주", motifs:["변상","지혜"], fulltext:"(원문 전체) … (어린 원님)" },
+    { id:"VAR-B-01", title:"매값 변상하기", code:"B", name:"매값 변상하기", tier:"variant", child:true, year:1972, regionName:"춘천", motifs:["변상"], fulltext:"(원문 전체) … (어린 원님)" },
+    { id:"VAR-C-01", title:"잃어버린 보따리 변상하기", code:"C", name:"잃어버린 보따리 변상하기", tier:"variant", child:true, year:1968, regionName:"경주", motifs:["보따리","변상"], fulltext:"(원문 전체) … (어린 원님)" },
+    { id:"VAR-D-01", title:"시주값 전달 돌려받기", code:"D", name:"시주값 전달 돌려받기", tier:"variant", child:false, year:1964, regionName:"충주", motifs:["시주","전달"], fulltext:"(원문 전체) …" },
+    { id:"VAR-E-01", title:"소값 변상하기", code:"E", name:"소값 변상하기", tier:"variant", child:true, year:1966, regionName:"전주", motifs:["소","변상"], fulltext:"(원문 전체) … (어린 원님)" },
+    { id:"VAR-F-01", title:"죽제비 임자 가리기", code:"F", name:"죽제비 임자 가리기", tier:"variant", child:true, year:1967, regionName:"밀양", motifs:["임자","가리기"], fulltext:"(원문 전체) … (어린 원님)" },
+    { id:"VAR-G-01", title:"운값 변상하기", code:"G", name:"운값 변상하기", tier:"variant", child:false, year:1963, regionName:"부평", motifs:["운값","변상"], fulltext:"(원문 전체) …" },
+    { id:"VAR-H-01", title:"굴값 변상하기", code:"H", name:"굴값 변상하기", tier:"variant", child:false, year:1969, regionName:"포항", motifs:["굴","변상"], fulltext:"(원문 전체) …" },
+    { id:"VAR-E-02", title:"허명비판형", code:"E", name:"허명비판형", tier:"variant", child:false, year:1970, regionName:"제주", motifs:["비판"], fulltext:"(원문 전체) …" },
   ];
 
   // =========================
-  // (3) 마커 아이콘 생성(검정/흰 + 점선)
+  // (2) 마커 아이콘(작게)
   // =========================
   function makeIcon(code, tier, child){
     const cls = ["badge", tier, child ? "child" : ""].join(" ");
     return L.divIcon({
       className: "mark-icon",
       html: `<div class="${cls}">${code}</div>`,
-      iconSize: [28,28],
-      iconAnchor: [14,14]
+      iconSize: [20,20],
+      iconAnchor: [10,10]
     });
   }
 
   // =========================
-  // (4) 모달
+  // (3) 지역명 -> 좌표 변환 (Nominatim)
+  //    - 과도한 요청 방지 위해 캐시(Map) 사용
+  // =========================
+  const GEO_CACHE = new Map();
+
+  async function geocodeKorea(place){
+    const key = (place||"").trim();
+    if (!key) return null;
+    if (GEO_CACHE.has(key)) return GEO_CACHE.get(key);
+
+    // "place, South Korea" 형태로 검색 정확도↑
+    const q = encodeURIComponent(key + ", South Korea");
+    const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${q}`;
+
+    try{
+      const res = await fetch(url, {
+        headers: { "Accept": "application/json" }
+      });
+      const json = await res.json();
+      if (!json || !json.length) {
+        GEO_CACHE.set(key, null);
+        return null;
+      }
+      const lat = parseFloat(json[0].lat);
+      const lng = parseFloat(json[0].lon);
+      const val = [lat, lng];
+      GEO_CACHE.set(key, val);
+      return val;
+    }catch(e){
+      console.error("geocode failed:", key, e);
+      GEO_CACHE.set(key, null);
+      return null;
+    }
+  }
+
+  // =========================
+  // (4) 좌표 겹침 방지(jitter)
+  // =========================
+  function makeJitter(){
+    const seen = new Map();
+    return function jitterLatLng(lat, lng){
+      const key = lat.toFixed(6) + "," + lng.toFixed(6);
+      const n = seen.get(key) || 0;
+      seen.set(key, n + 1);
+      if (n === 0) return [lat, lng];
+
+      const angle = (n * 45) * Math.PI / 180;
+      const rKm = 0.03 * Math.ceil(n / 8); // 30m 간격
+      const dLat = (rKm / 111) * Math.sin(angle);
+      const dLng = (rKm / (111 * Math.cos(lat * Math.PI/180))) * Math.cos(angle);
+      return [lat + dLat, lng + dLng];
+    }
+  }
+
+  // =========================
+  // (5) 모달
   // =========================
   const modal = document.getElementById("modal");
   const mTitle = document.getElementById("mTitle");
@@ -348,7 +377,7 @@ index.html
   }
   function openDetail(d, q){
     mTitle.textContent = `${d.title}  (${d.tier==="core" ? "핵심" : "변이"}·${d.code}${d.child ? "·어린 원님" : ""})`;
-    mMeta.textContent  = `${d.name} · ${d.region || ""} · ${d.year ?? "연도 미상"}`.trim();
+    mMeta.textContent  = `${d.name} · ${d.regionName || ""} · ${d.year ?? "연도 미상"}`.trim();
     mTags.innerHTML = "";
     (d.motifs||[]).forEach(x=>{
       const span = document.createElement("span");
@@ -361,7 +390,7 @@ index.html
   }
 
   // =========================
-  // (5) 필터/검색
+  // (6) 필터/검색 + 마커 렌더링
   // =========================
   function getChecked(selector){
     return new Set([...document.querySelectorAll(selector)].filter(x=>x.checked).map(x=>x.value));
@@ -376,7 +405,7 @@ index.html
     MARKERS = [];
   }
 
-  function apply(){
+  async function apply(){
     const tiers = getChecked(".tier");
     const codes = getChecked(".code");
     const onlyChild = document.getElementById("onlyChild").checked;
@@ -401,43 +430,61 @@ index.html
         const ok = motifs.some(m=>have.has(m));
         if (!ok) return false;
       }
-
       if (q){
-        const inText = (d.fulltext||"").includes(q) || (d.title||"").includes(q) || (d.region||"").includes(q) || (d.name||"").includes(q);
+        const inText = (d.fulltext||"").includes(q) || (d.title||"").includes(q) || (d.regionName||"").includes(q) || (d.name||"").includes(q);
         if (!inText) return false;
       }
       return true;
     });
 
-    // markers
     clearMarkers();
-    filtered.forEach(d=>{
-      // CRS.Simple에서 좌표는 (y,x)
-      const marker = L.marker([d.y, d.x], { icon: makeIcon(d.code, d.tier, d.child) })
+    const jitterLatLng = makeJitter();
+    const okLatLngs = [];
+
+    // 지역명 -> 좌표 변환 후 마커 생성
+    for (const d of filtered){
+      const latlng = await geocodeKorea(d.regionName);
+      if (!latlng) continue;
+
+      const [jLat, jLng] = jitterLatLng(latlng[0], latlng[1]);
+      okLatLngs.push([jLat, jLng]);
+
+      const marker = L.marker([jLat, jLng], { icon: makeIcon(d.code, d.tier, d.child) })
         .addTo(map)
         .on("click", ()=> openDetail(d, q));
+
       MARKERS.push(marker);
-    });
+    }
 
     // list
-    document.getElementById("count").textContent = `${filtered.length}건 / ${DATA.length}건`;
+    document.getElementById("count").textContent = `${okLatLngs.length}건 / ${filtered.length}건 (필터 후)`;
     const list = document.getElementById("list");
     list.innerHTML = "";
+
     filtered.forEach(d=>{
       const el = document.createElement("div");
       el.className = "card";
-      el.onclick = ()=> { map.setView([d.y, d.x], Math.min(map.getZoom()+1, 1)); openDetail(d, q); };
+      el.onclick = async ()=> {
+        const latlng = await geocodeKorea(d.regionName);
+        if (!latlng) return;
+        map.setView(latlng, Math.max(map.getZoom(), 9));
+        openDetail(d, q);
+      };
       el.innerHTML = `
         <div class="title">(${d.code}) ${escapeHTML(d.title)} ${d.child ? "·(어린 원님)" : ""}</div>
-        <div class="meta">${escapeHTML(d.tier==="core" ? "핵심형(검정)" : "변이형(흰)")} · ${d.year ?? "연도 미상"} · ${escapeHTML(d.region||"")}</div>
+        <div class="meta">${escapeHTML(d.tier==="core" ? "핵심형(검정)" : "변이형(흰)")} · ${d.year ?? "연도 미상"} · ${escapeHTML(d.regionName||"")}</div>
       `;
       list.appendChild(el);
     });
+
+    // 지도 범위 맞추기
+    if (okLatLngs.length){
+      map.fitBounds(okLatLngs, { padding:[30,30] });
+    }
   }
 
-  document.getElementById("apply").onclick = apply;
+  document.getElementById("apply").onclick = ()=> apply();
   apply();
 </script>
 </body>
 </html>
-<!-- test -->
